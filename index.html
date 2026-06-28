@@ -26,90 +26,122 @@ html{scroll-behavior:smooth}
 body{
   background:
     linear-gradient(rgba(40,24,10,.18),rgba(40,24,10,.30)),
-    url("images/board_bg.jpg") center/cover fixed,
+    url("images/Wood_Pattern.svg") top left / 620px auto repeat fixed,
     var(--wood-dark);
   color:var(--cream);
   font-family:"Space Grotesk",system-ui,sans-serif;
   min-height:100vh;
   -webkit-font-smoothing:antialiased;
 }
-.wrap{max-width:1180px;margin:0 auto;padding:clamp(28px,5vw,64px) clamp(18px,4vw,48px)}
+.wrap{max-width:1180px;margin:0 auto;padding:clamp(28px,5vw,72px) clamp(18px,4vw,48px) 96px}
+
+/* header sits on a faint dark vignette so it stays legible on wood */
+header{position:relative;text-shadow:0 2px 18px rgba(20,10,2,.55)}
+
+/* header */
+.eyebrow{
+  font-family:"Space Mono",monospace;
+  color:var(--citron);
+  letter-spacing:.34em;text-transform:uppercase;
+  font-size:.7rem;margin-bottom:18px;
+}
+h1{
+  font-family:"Fraunces",serif;
+  font-weight:900;
+  font-size:clamp(2.6rem,7vw,5.4rem);
+  line-height:.92;
+  letter-spacing:-.02em;
+  color:#fbf3e2;
+}
+h1 .small{display:block;font-style:italic;font-weight:400;font-size:.42em;color:#e8d8bb;letter-spacing:0;margin-top:.5em;text-shadow:0 1px 8px rgba(20,10,2,.6)}
+.lede{
+  margin-top:22px;max-width:54ch;color:#ecddc2;
+  font-size:1.02rem;line-height:1.6;
+}
+.lede em{color:#ffd9a0;font-style:italic}
+.rule{height:1px;background:rgba(246,239,224,.22);margin:38px 0 10px}
+.plating{
+  display:flex;flex-wrap:wrap;gap:8px 26px;align-items:baseline;
+  font-family:"Space Mono",monospace;font-size:.72rem;color:#d8c6a6;
+  letter-spacing:.05em;
+}
+.plating b{color:#fbf3e2;font-weight:400}
 
 /* board grid */
 .board{
+  margin-top:46px;
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(232px,1fr));
-  gap:clamp(20px,3vw,44px);
-  align-items:start;
+  gap:clamp(16px,2.4vw,30px);
 }
 .bite{
   position:relative;
-  background:transparent;
-  border:none;
-  border-radius:0;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #fbf4e4, var(--paper) 55%, var(--paper-edge));
+  border:1px solid rgba(58,36,16,.25);
+  border-radius:10px;
+  overflow:hidden;
   cursor:pointer;
-  transition:transform .35s cubic-bezier(.2,.7,.2,1);
+  box-shadow:0 14px 30px -14px rgba(20,10,2,.7), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s;
 }
-.bite:focus-visible{outline:2px solid var(--citron);outline-offset:6px;border-radius:10px}
-.bite:hover{transform:translateY(-6px)}
+.bite:focus-visible{outline:2px solid var(--citron);outline-offset:3px}
+.bite:hover{transform:translateY(-7px) rotate(-.4deg);box-shadow:0 26px 50px -18px rgba(20,10,2,.85)}
 .bite.tasted{cursor:default}
 .bite.tasted:hover{transform:none}
 .bite .num{
-  position:absolute;top:6px;left:10px;z-index:3;
-  font-family:"Space Mono",monospace;font-size:.66rem;color:#ffd9a0;
-  text-shadow:0 1px 6px rgba(20,10,2,.9);
+  position:absolute;top:10px;left:12px;z-index:3;
+  font-family:"Space Mono",monospace;font-size:.66rem;color:var(--citron);
+  background:rgba(255,255,255,.55);padding:2px 7px;border-radius:99px;
 }
-/* food vector floats directly on the board */
-.thumb{position:relative;aspect-ratio:1;display:grid;place-items:center;padding:10px}
+/* food vector floats on transparent space, no photo crop */
+.thumb{position:relative;aspect-ratio:1;display:grid;place-items:center;padding:14px 18px 30px}
 .thumb img{
-  width:82%;height:82%;object-fit:contain;display:block;
-  filter:drop-shadow(0 10px 14px rgba(20,10,2,.5));
+  width:70%;height:70%;object-fit:contain;display:block;
+  filter:drop-shadow(0 8px 10px rgba(40,20,4,.28));
   transition:transform .5s cubic-bezier(.2,.7,.2,1);
 }
-.bite:hover .thumb img{transform:scale(1.06) rotate(3deg)}
-.bite.eaten .thumb img{filter:drop-shadow(0 10px 14px rgba(20,10,2,.5)) grayscale(.4) opacity(.5)}
+.bite:hover .thumb img{transform:translateY(-10px) scale(1.05) rotate(3deg)}
+.bite.eaten .thumb img{filter:drop-shadow(0 8px 10px rgba(40,20,4,.28)) grayscale(.35) opacity(.55)}
 .thumb::after{content:none}
-
-/* text floats under the food; name always visible, full note reveals on hover */
+/* hover tasting card slides up from the bottom of the plate */
 .taste{
-  position:relative;z-index:2;
-  padding:4px 10px 2px;text-align:center;
+  position:absolute;inset:auto 0 0 0;z-index:2;
+  padding:14px 16px 16px;
+  background:linear-gradient(transparent, rgba(243,234,214,.96) 26%, #f3ead6);
+  transform:translateY(calc(100% - 58px));
+  transition:transform .4s cubic-bezier(.2,.7,.2,1);
 }
+.bite:hover .taste,.bite:focus-within .taste{transform:translateY(0)}
 .taste .name{
-  font-family:"Fraunces",serif;font-weight:700;font-size:1.18rem;line-height:1.15;color:#fbf3e2;
-  text-shadow:0 2px 10px rgba(20,10,2,.95),0 0 2px rgba(20,10,2,.8);
+  font-family:"Fraunces",serif;font-weight:600;font-size:1.18rem;line-height:1.1;color:var(--ink);
 }
 .taste .len{
-  font-family:"Space Mono",monospace;font-size:.64rem;color:#ffce9a;
-  text-transform:uppercase;letter-spacing:.14em;margin-top:5px;
-  text-shadow:0 1px 6px rgba(20,10,2,.95);
+  font-family:"Space Mono",monospace;font-size:.66rem;color:var(--rust);
+  text-transform:uppercase;letter-spacing:.14em;margin-top:6px;
 }
-/* the note is collapsed until hover, then expands fully — no clipping */
 .taste .notes{
-  margin-top:0;color:#f0e3c8;font-size:.82rem;line-height:1.45;
-  text-shadow:0 1px 6px rgba(20,10,2,.95);
-  max-height:0;opacity:0;overflow:hidden;
-  transition:max-height .4s ease, opacity .3s ease, margin-top .4s ease;
+  margin-top:10px;color:var(--ash);font-size:.84rem;line-height:1.5;
+  opacity:0;transition:opacity .3s .1s;
 }
-.bite:hover .taste .notes,.bite:focus-within .taste .notes{
-  max-height:240px;opacity:1;margin-top:9px;
-}
-.taste .notes em{color:#fff3df;font-style:italic}
+.bite:hover .taste .notes,.bite:focus-within .taste .notes{opacity:1}
+.taste .notes em{color:var(--ink);font-style:italic}
 
-/* rating row floats too, no background */
+/* footer of card: rating */
 .ratebar{
   position:relative;z-index:4;
-  padding:8px 10px 4px;display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:12px 16px 16px;display:flex;align-items:center;gap:10px;
+  border-top:1px solid rgba(58,36,16,.18);
+  background:#efe4cd;
 }
 .stars{display:flex;gap:3px}
 .star{
-  font-size:1.15rem;line-height:1;color:rgba(246,239,224,.4);
+  font-size:1.15rem;line-height:1;color:rgba(58,36,16,.22);
   cursor:pointer;transition:color .15s, transform .15s;
-  text-shadow:0 1px 5px rgba(20,10,2,.9);
 }
-.star.lit{color:#f3b04a}
+.star.lit{color:var(--citron)}
 .star:hover{transform:scale(1.2)}
-.rate-label{font-family:"Space Mono",monospace;font-size:.6rem;color:#e0cdaa;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 5px rgba(20,10,2,.9)}
+.rate-label{font-family:"Space Mono",monospace;font-size:.62rem;color:var(--ash);letter-spacing:.1em;text-transform:uppercase}
 
 .empty{padding:60px 20px;text-align:center;color:#ecddc2;font-family:"Space Mono",monospace;font-size:.8rem;line-height:1.7;text-shadow:0 1px 8px rgba(20,10,2,.6)}
 .empty b{color:#fbf3e2;font-weight:400}
@@ -124,9 +156,29 @@ footer{margin-top:64px;padding-top:24px;border-top:1px solid rgba(246,239,224,.2
 </head>
 <body>
 <div class="wrap">
+  <header>
+    <div class="eyebrow">Sci-Fi Sunday · serving №7</div>
+    <h1>Short-Short<br>Charcuterie
+      <span class="small">a tasting board of bite-sized science fiction</span>
+    </h1>
+    <p class="lede">Six small stories, plated like cured meats and soft cheeses. Hover to read the tasting notes, click to take a bite — mind the <em>om-nom-nom</em> — then come back and tell the kitchen how it ate.</p>
+    <div class="rule"></div>
+    <div class="plating">
+      <span>course: <b>flash fiction</b></span>
+      <span>portions: <b id="count">—</b></span>
+      <span>pairing: <b>black coffee, no sugar</b></span>
+      <span>chef: <b>the void</b></span>
+    </div>
+  </header>
+
   <main class="board" id="board">
     <div class="empty" id="loading">plating the board…</div>
   </main>
+
+  <footer>
+    data: shorts.xlsx · art: /images · ratings stored on this device only<br>
+    edit the spreadsheet or swap the cover art and reload — the board re-plates itself.
+  </footer>
 </div>
 
 <script>
@@ -238,6 +290,7 @@ async function load(){
     board.innerHTML = "";
     if(!data.length){ board.innerHTML = `<div class="empty">The board is empty. Add rows to <b>shorts.xlsx</b> and reload.</div>`; return; }
     data.forEach((row,i)=> board.appendChild(makeBite(row,i)));
+    document.getElementById("count").textContent = data.length + " bites";
   }catch(err){
     board.innerHTML = `<div class="empty">Couldn't plate the board.<br><b>${err.message}</b><br><br>Run this through a local server (file:// blocks the spreadsheet fetch):<br><b>python3 -m http.server</b></div>`;
   }

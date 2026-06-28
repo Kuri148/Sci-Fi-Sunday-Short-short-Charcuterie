@@ -4,8 +4,9 @@ SCI-FI SUNDAY: SHORT-SHORT CHARCUTERIE
 FILES
   index.html      the page
   shorts.xlsx     the data (edit this to change entries)
-  images/         board_bg.jpg  -> the wood charcuterie board background
-                  food_*.svg    -> one transparent food vector per row
+  images/         Wood_Pattern.svg -> the tiling wood background
+                  *.svg            -> one transparent food vector per row
+                  board_bg.jpg     -> old background (kept, no longer used)
 
 HOW TO RUN
   Because the page fetches shorts.xlsx, opening index.html directly with
@@ -33,7 +34,7 @@ SWAPPING IMAGES
   redraw them. Drop in your own SVG or PNG (transparent works best) and
   point the row's "image" cell at the new filename.
 
-  To change the board itself, replace images/board_bg.jpg.
+  To change the board itself, replace images/Wood_Pattern.svg (it tiles).
 
 BEHAVIOR
   hover  -> shows name, length, and "what it tastes like"
