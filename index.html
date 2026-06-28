@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sci-Fi Sunday Short-Short Charcuterie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --plate:#0d0b14;
+  --board:#161320;
+  --slab:#1f1b2e;
+  --plum:#9d7bff;
+  --citron:#d9ff5c;
+  --rust:#ff7a48;
+  --cream:#f3eee2;
+  --ash:#8b86a0;
+  --line:rgba(157,123,255,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(157,123,255,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(255,122,72,.08), transparent 55%),
+    var(--plate);
+  color:var(--cream);
+  font-family:"Space Grotesk",system-ui,sans-serif;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:clamp(28px,5vw,72px) clamp(18px,4vw,48px) 96px}
+
+/* header */
+.eyebrow{
+  font-family:"Space Mono",monospace;
+  color:var(--citron);
+  letter-spacing:.34em;text-transform:uppercase;
+  font-size:.7rem;margin-bottom:18px;
+}
+h1{
+  font-family:"Fraunces",serif;
+  font-weight:900;
+  font-size:clamp(2.6rem,7vw,5.4rem);
+  line-height:.92;
+  letter-spacing:-.02em;
+}
+h1 .small{display:block;font-style:italic;font-weight:400;font-size:.42em;color:var(--ash);letter-spacing:0;margin-top:.5em}
+.lede{
+  margin-top:22px;max-width:54ch;color:var(--ash);
+  font-size:1.02rem;line-height:1.6;
+}
+.rule{height:1px;background:var(--line);margin:38px 0 10px}
+.plating{
+  display:flex;flex-wrap:wrap;gap:8px 26px;align-items:baseline;
+  font-family:"Space Mono",monospace;font-size:.72rem;color:var(--ash);
+  letter-spacing:.05em;
+}
+.plating b{color:var(--cream);font-weight:400}
+
+/* board grid */
+.board{
+  margin-top:46px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(232px,1fr));
+  gap:clamp(16px,2.4vw,30px);
+}
+.bite{
+  position:relative;
+  background:linear-gradient(180deg,var(--board),var(--slab));
+  border:1px solid var(--line);
+  border-radius:4px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s, box-shadow .35s;
+}
+.bite:focus-visible{outline:2px solid var(--citron);outline-offset:3px}
+.bite:hover{transform:translateY(-6px);border-color:rgba(157,123,255,.5);box-shadow:0 22px 50px -20px rgba(0,0,0,.8)}
+.bite.tasted{cursor:default;opacity:.92}
+.bite.tasted:hover{transform:none;box-shadow:none}
+.bite .num{
+  position:absolute;top:10px;left:12px;z-index:3;
+  font-family:"Space Mono",monospace;font-size:.66rem;color:var(--citron);
+  background:rgba(13,11,20,.6);padding:2px 7px;border-radius:99px;backdrop-filter:blur(4px);
+}
+.thumb{position:relative;aspect-ratio:1;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease, filter .4s}
+.bite:hover .thumb img{transform:scale(1.08)}
+.thumb::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 40%,rgba(13,11,20,.85));
+}
+/* hover tasting card */
+.taste{
+  position:absolute;inset:auto 0 0 0;z-index:2;
+  padding:16px 16px 18px;
+  transform:translateY(calc(100% - 64px));
+  transition:transform .4s cubic-bezier(.2,.7,.2,1);
+}
+.bite:hover .taste,.bite:focus-within .taste{transform:translateY(0)}
+.taste .name{
+  font-family:"Fraunces",serif;font-weight:600;font-size:1.18rem;line-height:1.1;
+}
+.taste .len{
+  font-family:"Space Mono",monospace;font-size:.66rem;color:var(--rust);
+  text-transform:uppercase;letter-spacing:.14em;margin-top:6px;
+}
+.taste .notes{
+  margin-top:10px;color:var(--ash);font-size:.84rem;line-height:1.5;
+  opacity:0;transition:opacity .3s .1s;
+}
+.bite:hover .taste .notes,.bite:focus-within .taste .notes{opacity:1}
+.taste .notes em{color:var(--cream);font-style:italic}
+
+/* footer of card: rating */
+.ratebar{
+  padding:12px 16px 16px;display:flex;align-items:center;gap:10px;
+  border-top:1px solid var(--line);
+}
+.stars{display:flex;gap:3px}
+.star{
+  font-size:1.15rem;line-height:1;color:rgba(243,238,226,.22);
+  cursor:pointer;transition:color .15s, transform .15s;
+}
+.bite.tasted .star{cursor:pointer}
+.star.lit{color:var(--citron)}
+.star:hover{transform:scale(1.2)}
+.rate-label{font-family:"Space Mono",monospace;font-size:.62rem;color:var(--ash);letter-spacing:.1em;text-transform:uppercase}
+
+.empty{padding:60px 20px;text-align:center;color:var(--ash);font-family:"Space Mono",monospace;font-size:.8rem;line-height:1.7}
+.empty b{color:var(--cream);font-weight:400}
+
+footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);font-family:"Space Mono",monospace;font-size:.66rem;color:var(--ash);letter-spacing:.06em;line-height:1.8}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Sci-Fi Sunday · serving №7</div>
+    <h1>Short-Short<br>Charcuterie
+      <span class="small">a tasting board of bite-sized science fiction</span>
+    </h1>
+    <p class="lede">Six small stories, plated like cured meats and soft cheeses. Hover to read the tasting notes, click to take a bite — mind the <em>om-nom-nom</em> — then come back and tell the kitchen how it ate.</p>
+    <div class="rule"></div>
+    <div class="plating">
+      <span>course: <b>flash fiction</b></span>
+      <span>portions: <b id="count">—</b></span>
+      <span>pairing: <b>black coffee, no sugar</b></span>
+      <span>chef: <b>the void</b></span>
+    </div>
+  </header>
+
+  <main class="board" id="board">
+    <div class="empty" id="loading">plating the board…</div>
+  </main>
+
+  <footer>
+    data: shorts.xlsx · art: /images · ratings stored on this device only<br>
+    edit the spreadsheet or swap the cover art and reload — the board re-plates itself.
+  </footer>
+</div>
+
+<script>
+const RATE_KEY = "scifi_charcuterie_ratings_v1";
+let ratings = {};
+try { ratings = JSON.parse(localStorage.getItem(RATE_KEY) || "{}"); } catch(e){ ratings = {}; }
+function saveRatings(){ try{ localStorage.setItem(RATE_KEY, JSON.stringify(ratings)); }catch(e){} }
+
+/* "om-nom-nom" via WebAudio — three soft chewy thumps */
+let actx;
+function omNomNom(){
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const t0 = actx.currentTime;
+    [0,0.16,0.32].forEach((dt,i)=>{
+      const o = actx.createOscillator();
+      const g = actx.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(150 - i*18, t0+dt);
+      o.frequency.exponentialRampToValueAtTime(70, t0+dt+0.13);
+      g.gain.setValueAtTime(0.0001, t0+dt);
+      g.gain.exponentialRampToValueAtTime(0.5, t0+dt+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+dt+0.15);
+      o.connect(g).connect(actx.destination);
+      o.start(t0+dt); o.stop(t0+dt+0.16);
+    });
+  }catch(e){}
+}
+
+function starRow(item){
+  const wrap = document.createElement("div");
+  wrap.className = "ratebar";
+  const stars = document.createElement("div");
+  stars.className = "stars";
+  const current = ratings[item.name] || 0;
+  for(let n=1;n<=5;n++){
+    const s = document.createElement("span");
+    s.className = "star" + (n<=current ? " lit":"");
+    s.textContent = "★";
+    s.setAttribute("role","button");
+    s.setAttribute("tabindex","0");
+    s.setAttribute("aria-label", n+" star"+(n>1?"s":""));
+    const set = ()=>{ ratings[item.name]=n; saveRatings(); paint(); };
+    s.addEventListener("click",e=>{e.stopPropagation();set();});
+    s.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();set();}});
+    s.addEventListener("mouseenter",()=>paint(n));
+    s.addEventListener("mouseleave",()=>paint());
+    stars.appendChild(s);
+  }
+  function paint(hover){
+    [...stars.children].forEach((el,idx)=>{
+      const lvl = hover!=null ? hover : (ratings[item.name]||0);
+      el.classList.toggle("lit", idx+1<=lvl);
+    });
+  }
+  const label = document.createElement("span");
+  label.className = "rate-label";
+  label.textContent = current ? "your bite" : "rate it";
+  wrap.append(stars,label);
+  return wrap;
+}
+
+function makeBite(item, idx){
+  const tasted = !!ratings[item.name]; // once tasted (clicked), image is "uneaten" -> unclickable
+  // Spec: clicking the *image* plays sound, makes image/entry unclickable, opens url.
+  const card = document.createElement("article");
+  card.className = "bite";
+  card.tabIndex = 0;
+  card.dataset.name = item.name;
+
+  card.innerHTML = `
+    <span class="num">${String(idx+1).padStart(2,"0")}</span>
+    <div class="thumb"><img src="images/${item.image}" alt="cover art for ${item.name}" onerror="this.style.opacity=.25"></div>
+    <div class="taste">
+      <div class="name">${item.name}</div>
+      <div class="len">${item.length}</div>
+      <div class="notes">tastes like <em>${item.tastes_like}</em></div>
+    </div>`;
+
+  card.appendChild(starRow(item));
+
+  let eaten = card.classList.contains("eaten");
+  function bite(){
+    if(card.classList.contains("eaten")) return;
+    card.classList.add("eaten","tasted");
+    omNomNom();
+    if(item.url) window.open(item.url, "_blank", "noopener");
+  }
+  // clicking the image area triggers the bite; star clicks stopPropagation
+  card.querySelector(".thumb").addEventListener("click", bite);
+  card.querySelector(".taste").addEventListener("click", bite);
+  card.addEventListener("keydown", e=>{
+    if((e.key==="Enter"||e.key===" ") && !["star"].some(c=>e.target.classList.contains(c))){
+      e.preventDefault(); bite();
+    }
+  });
+  return card;
+}
+
+async function load(){
+  const board = document.getElementById("board");
+  try{
+    const res = await fetch("shorts.xlsx");
+    if(!res.ok) throw new Error("missing shorts.xlsx");
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, {type:"array"});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet, {defval:""});
+    board.innerHTML = "";
+    if(!data.length){ board.innerHTML = `<div class="empty">The board is empty. Add rows to <b>shorts.xlsx</b> and reload.</div>`; return; }
+    data.forEach((row,i)=> board.appendChild(makeBite(row,i)));
+    document.getElementById("count").textContent = data.length + " bites";
+  }catch(err){
+    board.innerHTML = `<div class="empty">Couldn't plate the board.<br><b>${err.message}</b><br><br>Run this through a local server (file:// blocks the spreadsheet fetch):<br><b>python3 -m http.server</b></div>`;
+  }
+}
+load();
+</script>
+</body>
+</html>
