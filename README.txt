@@ -1,6 +1,10 @@
 SCI-FI SUNDAY: SHORT-SHORT CHARCUTERIE
 ======================================
 
+LIVE SITE
+  https://kuri148.github.io/Sci-Fi-Sunday-Short-short-Charcuterie/
+  QR code: images/site_qr.png
+
 FILES
   index.html      the page
   shorts.xlsx     the data (edit this to change entries)
