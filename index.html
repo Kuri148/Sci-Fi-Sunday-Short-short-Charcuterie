@@ -38,7 +38,7 @@ body{
 /* board grid */
 .board{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(232px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
   gap:clamp(20px,3vw,44px);
   align-items:start;
 }
@@ -56,38 +56,37 @@ body{
 .bite.tasted:hover{transform:none}
 .bite .num{
   position:absolute;top:6px;left:10px;z-index:3;
-  font-family:"Space Mono",monospace;font-size:.66rem;color:#ffd9a0;
+  font-family:"Space Mono",monospace;font-size:.8rem;color:#ffd9a0;
   text-shadow:0 1px 6px rgba(20,10,2,.9);
 }
-/* food vector floats directly on the board */
-.thumb{position:relative;aspect-ratio:1;display:grid;place-items:center;padding:10px}
+/* video thumbnail fills a 16:9 frame */
+.thumb{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:14px;box-shadow:0 10px 20px rgba(20,10,2,.55)}
 .thumb img{
-  width:82%;height:82%;object-fit:contain;display:block;
-  filter:drop-shadow(0 10px 14px rgba(20,10,2,.5));
+  width:100%;height:100%;object-fit:cover;display:block;
   transition:transform .5s cubic-bezier(.2,.7,.2,1);
 }
-.bite:hover .thumb img{transform:scale(1.06) rotate(3deg)}
-.bite.eaten .thumb img{filter:drop-shadow(0 10px 14px rgba(20,10,2,.5)) grayscale(.4) opacity(.5)}
+.bite:hover .thumb img{transform:scale(1.08)}
+.bite.eaten .thumb img{filter:grayscale(.5) opacity(.55)}
 .thumb::after{content:none}
 
-/* text stacks under the food; full note reveals on hover by expanding height */
+/* text stacks under the thumbnail; full note reveals on hover by expanding height */
 .taste{
   position:relative;z-index:2;
-  padding:2px 12px 0;text-align:center;
+  padding:8px 12px 0;text-align:center;
 }
 .taste .name{
-  font-family:"Fraunces",serif;font-weight:700;font-size:1.18rem;line-height:1.15;color:#fbf3e2;
+  font-family:"Fraunces",serif;font-weight:700;font-size:1.6rem;line-height:1.2;color:#fbf3e2;
   text-shadow:0 2px 10px rgba(20,10,2,.95),0 0 2px rgba(20,10,2,.85);
 }
 .taste .len{
-  font-family:"Space Mono",monospace;font-size:.64rem;color:#ffce9a;
-  text-transform:uppercase;letter-spacing:.14em;margin-top:5px;
+  font-family:"Space Mono",monospace;font-size:.85rem;color:#ffce9a;
+  text-transform:uppercase;letter-spacing:.14em;margin-top:6px;
   text-shadow:0 1px 6px rgba(20,10,2,.95);
 }
 .taste .notes{
-  color:#f0e3c8;font-size:.82rem;line-height:1.45;
+  color:#f0e3c8;font-size:1.05rem;line-height:1.5;
   text-shadow:0 1px 6px rgba(20,10,2,.95);
-  margin-top:9px;
+  margin-top:10px;
 }
 .taste .notes em{color:#fff3df;font-style:italic}
 
@@ -95,17 +94,17 @@ body{
 .ratebar{
   position:relative;z-index:4;
   margin-top:auto;
-  padding:10px 12px 4px;display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:12px 12px 4px;display:flex;align-items:center;justify-content:center;gap:10px;
 }
-.stars{display:flex;gap:3px}
+.stars{display:flex;gap:4px}
 .star{
-  font-size:1.15rem;line-height:1;color:rgba(246,239,224,.4);
+  font-size:1.5rem;line-height:1;color:rgba(246,239,224,.4);
   cursor:pointer;transition:color .15s, transform .15s;
   text-shadow:0 1px 5px rgba(20,10,2,.9);
 }
 .star.lit{color:#f3b04a}
 .star:hover{transform:scale(1.2)}
-.rate-label{font-family:"Space Mono",monospace;font-size:.6rem;color:#e0cdaa;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 5px rgba(20,10,2,.9)}
+.rate-label{font-family:"Space Mono",monospace;font-size:.78rem;color:#e0cdaa;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 5px rgba(20,10,2,.9)}
 
 .empty{padding:60px 20px;text-align:center;color:#ecddc2;font-family:"Space Mono",monospace;font-size:.8rem;line-height:1.7;text-shadow:0 1px 8px rgba(20,10,2,.6)}
 .empty b{color:#fbf3e2;font-weight:400}
@@ -183,6 +182,15 @@ function starRow(item){
   return wrap;
 }
 
+function ytId(url){
+  try{
+    const u = new URL(url);
+    if(u.searchParams.get("v")) return u.searchParams.get("v");
+    if(u.hostname === "youtu.be") return u.pathname.slice(1);
+  }catch(e){}
+  return null;
+}
+
 function makeBite(item, idx){
   const tasted = !!ratings[item.name]; // once tasted (clicked), image is "uneaten" -> unclickable
   // Spec: clicking the *image* plays sound, makes image/entry unclickable, opens url.
@@ -191,9 +199,12 @@ function makeBite(item, idx){
   card.tabIndex = 0;
   card.dataset.name = item.name;
 
+  const vid = ytId(item.url);
+  const thumbSrc = vid ? `https://img.youtube.com/vi/${vid}/hqdefault.jpg` : `images/${item.image}`;
+
   card.innerHTML = `
     <span class="num">${String(idx+1).padStart(2,"0")}</span>
-    <div class="thumb"><img src="images/${item.image}" alt="cover art for ${item.name}" onerror="this.style.opacity=.25"></div>
+    <div class="thumb"><img src="${thumbSrc}" alt="video thumbnail for ${item.name}" onerror="this.onerror=null;this.src='images/${item.image}';"></div>
     <div class="taste">
       <div class="name">${item.name}</div>
       <div class="len">${item.length}</div>
