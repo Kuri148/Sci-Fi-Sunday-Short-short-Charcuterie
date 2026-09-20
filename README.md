@@ -38,7 +38,16 @@ Columns, in order:
 - `length` — e.g. "12 min"
 - `tastes_like` — the flavor note shown on hover
 - `image` — filename inside `images/` (e.g. `last_question.png`)
-- `url` — link opened in a new tab when the entry is "eaten"
+- `url` — link opened in a new tab when the entry is clicked
+
+Optional columns, for shorts we've already watched together:
+
+- `viewed` — month label, e.g. "September". Rows with a value drop below a
+  "we viewed these in <month>" divider (one divider per month, sheet order)
+- `stars` — 1-5; locked in and shown read-only on those cards
+
+Rows with no `viewed` value stay at the top and remain rateable. `length`,
+`tastes_like` and `url` may be left blank.
 
 Add or remove rows freely; the board re-plates on reload.
 
@@ -55,7 +64,7 @@ To change the board itself, replace `images/Wood_Pattern.svg` (it tiles).
 ## Behavior
 
 - **hover** — shows name, length, and "what it tastes like"
-- **click** — plays an "om-nom-nom", marks the bite eaten (unclickable),
-  and opens the url in a new tab
+- **click** — plays an "om-nom-nom" and opens the url in a new tab (every
+  click, on any card, including the viewed ones)
 - **stars** — rate 1-5; saved in this browser (localStorage) so it persists
   when you return to the page

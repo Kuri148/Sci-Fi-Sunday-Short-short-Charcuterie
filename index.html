@@ -52,8 +52,6 @@ body{
 }
 .bite:focus-visible{outline:2px solid var(--citron);outline-offset:6px;border-radius:10px}
 .bite:hover{transform:translateY(-6px)}
-.bite.tasted{cursor:default}
-.bite.tasted:hover{transform:none}
 .bite .num{
   position:absolute;top:6px;left:10px;z-index:3;
   font-family:"Space Mono",monospace;font-size:1rem;color:#ffd9a0;
@@ -66,7 +64,6 @@ body{
   transition:transform .5s cubic-bezier(.2,.7,.2,1);
 }
 .bite:hover .thumb img{transform:scale(1.08)}
-.bite.eaten .thumb img{filter:grayscale(.5) opacity(.55)}
 .thumb::after{content:none}
 
 /* text stacks under the thumbnail; full note reveals on hover by expanding height */
@@ -105,6 +102,20 @@ body{
 .star.lit{color:#f3b04a}
 .star:hover{transform:scale(1.2)}
 .rate-label{font-family:"Space Mono",monospace;font-size:.95rem;color:#e0cdaa;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 1px 5px rgba(20,10,2,.9)}
+
+/* locked (already viewed) ratings are read-only */
+.ratebar.locked .star{cursor:default}
+.ratebar.locked .star:hover{transform:none}
+
+/* divider between the open board and a month of viewed shorts */
+.divider{
+  grid-column:1/-1;
+  display:flex;align-items:center;gap:20px;
+  margin:clamp(12px,3vw,36px) 0 0;
+  font-family:"Space Mono",monospace;font-size:1.05rem;letter-spacing:.14em;text-transform:uppercase;
+  color:#ffce9a;text-shadow:0 1px 6px rgba(20,10,2,.95);
+}
+.divider::before,.divider::after{content:"";flex:1;height:2px;background:rgba(255,206,154,.45);border-radius:2px}
 
 .empty{padding:60px 20px;text-align:center;color:#ecddc2;font-family:"Space Mono",monospace;font-size:.8rem;line-height:1.7;text-shadow:0 1px 8px rgba(20,10,2,.6)}
 .empty b{color:#fbf3e2;font-weight:400}
@@ -149,16 +160,21 @@ function omNomNom(){
   }catch(e){}
 }
 
-function starRow(item){
+function starRow(item, locked){
   const wrap = document.createElement("div");
-  wrap.className = "ratebar";
+  wrap.className = "ratebar" + (locked ? " locked" : "");
   const stars = document.createElement("div");
   stars.className = "stars";
-  const current = ratings[item.name] || 0;
+  const current = locked ? (Number(item.stars) || 0) : (ratings[item.name] || 0);
   for(let n=1;n<=5;n++){
     const s = document.createElement("span");
     s.className = "star" + (n<=current ? " lit":"");
     s.textContent = "★";
+    if(locked){
+      s.setAttribute("aria-hidden","true");
+      stars.appendChild(s);
+      continue;
+    }
     s.setAttribute("role","button");
     s.setAttribute("tabindex","0");
     s.setAttribute("aria-label", n+" star"+(n>1?"s":""));
@@ -177,7 +193,8 @@ function starRow(item){
   }
   const label = document.createElement("span");
   label.className = "rate-label";
-  label.textContent = current ? "your bite" : "rate it";
+  label.textContent = locked ? current+" / 5" : (current ? "your bite" : "rate it");
+  if(locked) wrap.setAttribute("aria-label", "rated "+current+" out of 5");
   wrap.append(stars,label);
   return wrap;
 }
@@ -192,9 +209,9 @@ function ytId(url){
 }
 
 function makeBite(item, idx){
-  const tasted = !!ratings[item.name]; // once tasted (clicked), image is "uneaten" -> unclickable
-  // Spec: clicking the *image* plays sound, makes image/entry unclickable, opens url.
+  // Clicking the image or text plays a sound and opens the url (as often as you like).
   const card = document.createElement("article");
+  const locked = !!item.viewed;
   card.className = "bite";
   card.tabIndex = 0;
   card.dataset.name = item.name;
@@ -207,16 +224,13 @@ function makeBite(item, idx){
     <div class="thumb"><img src="${thumbSrc}" alt="video thumbnail for ${item.name}" onerror="this.onerror=null;this.src='images/${item.image}';"></div>
     <div class="taste">
       <div class="name">${item.name}</div>
-      <div class="len">${item.length}</div>
-      <div class="notes">tastes like <em>${item.tastes_like}</em></div>
+      ${item.length ? `<div class="len">${item.length}</div>` : ""}
+      ${item.tastes_like ? `<div class="notes">tastes like <em>${item.tastes_like}</em></div>` : ""}
     </div>`;
 
-  card.appendChild(starRow(item));
+  card.appendChild(starRow(item, locked));
 
-  let eaten = card.classList.contains("eaten");
   function bite(){
-    if(card.classList.contains("eaten")) return;
-    card.classList.add("eaten","tasted");
     omNomNom();
     if(item.url) window.open(item.url, "_blank", "noopener");
   }
@@ -242,7 +256,23 @@ async function load(){
     const data = XLSX.utils.sheet_to_json(sheet, {defval:""});
     board.innerHTML = "";
     if(!data.length){ board.innerHTML = `<div class="empty">The board is empty. Add rows to <b>shorts.xlsx</b> and reload.</div>`; return; }
-    data.forEach((row,i)=> board.appendChild(makeBite(row,i)));
+    // open shorts first; viewed ones follow, one divider per month (in sheet order)
+    const groups = new Map();
+    data.forEach(row=>{
+      const key = String(row.viewed || "").trim();
+      if(!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(row);
+    });
+    let i = 0;
+    (groups.get("") || []).forEach(row=> board.appendChild(makeBite(row,i++)));
+    groups.forEach((rows,month)=>{
+      if(!month) return;
+      const div = document.createElement("div");
+      div.className = "divider";
+      div.textContent = "we viewed these in " + month;
+      board.appendChild(div);
+      rows.forEach(row=> board.appendChild(makeBite(row,i++)));
+    });
   }catch(err){
     board.innerHTML = `<div class="empty">Couldn't plate the board.<br><b>${err.message}</b><br><br>Run this through a local server (file:// blocks the spreadsheet fetch):<br><b>python3 -m http.server</b></div>`;
   }
